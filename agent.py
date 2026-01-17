@@ -2,6 +2,7 @@
 AI Agent for goal coaching with transparent reasoning and behavior adaptation.
 """
 import os
+import uuid
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import json
@@ -43,6 +44,11 @@ class NiaCoachingAgent:
                 print("Warning: OpenAI library not installed, using mock mode")
                 self.use_mock = True
     
+    @staticmethod
+    def _generate_id(prefix: str) -> str:
+        """Generate a unique ID with a prefix."""
+        return f"{prefix}_{uuid.uuid4()}"
+    
     def detect_setback(
         self, 
         goal: Goal, 
@@ -65,7 +71,7 @@ class NiaCoachingAgent:
             if goal.status != GoalStatus.COMPLETED:
                 reasoning.append("Target date has passed without completion")
                 return Setback(
-                    id=f"setback_{goal.id}_{datetime.now().timestamp()}",
+                    id=self._generate_id("setback"),
                     goal_id=goal.id,
                     type=SetbackType.MISSED_MILESTONE,
                     description="Goal deadline passed without completion"
@@ -79,7 +85,7 @@ class NiaCoachingAgent:
             if days_since_update > 7:
                 reasoning.append(f"No progress updates for {days_since_update} days")
                 return Setback(
-                    id=f"setback_{goal.id}_{datetime.now().timestamp()}",
+                    id=self._generate_id("setback"),
                     goal_id=goal.id,
                     type=SetbackType.LOSS_OF_MOTIVATION,
                     description=f"No activity for {days_since_update} days"
@@ -92,7 +98,7 @@ class NiaCoachingAgent:
             if recent_negative >= 3:
                 reasoning.append("Multiple negative sentiment indicators")
                 return Setback(
-                    id=f"setback_{goal.id}_{datetime.now().timestamp()}",
+                    id=self._generate_id("setback"),
                     goal_id=goal.id,
                     type=SetbackType.EXTERNAL_OBSTACLE,
                     description="Consistent negative sentiment in recent updates"
@@ -163,7 +169,7 @@ class NiaCoachingAgent:
             recovery_actions.append("Set more frequent, smaller check-ins")
         
         decision = CoachingDecision(
-            decision_id=f"decision_{datetime.now().timestamp()}",
+            decision_id=self._generate_id("decision"),
             decision_type="setback_recovery",
             decision=f"Recovery plan for {setback.type.value}",
             reasoning=reasoning,
@@ -230,7 +236,7 @@ class NiaCoachingAgent:
             reasoning.append("Recent negative sentiment - providing supportive guidance")
         
         decision = CoachingDecision(
-            decision_id=f"decision_{datetime.now().timestamp()}",
+            decision_id=self._generate_id("decision"),
             decision_type="advice",
             decision=advice,
             reasoning=reasoning,

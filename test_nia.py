@@ -39,8 +39,10 @@ class TestModels:
         initial_motivation = profile.motivation_level
         profile.update_from_interaction({"motivation_indicator": 0.9})
         
+        # Moving average formula: old * 0.7 + new * 0.3
+        # 0.5 * 0.7 + 0.9 * 0.3 = 0.35 + 0.27 = 0.62
         assert profile.motivation_level > initial_motivation
-        assert profile.motivation_level < 0.9  # Moving average
+        assert abs(profile.motivation_level - 0.62) < 0.01  # Check expected value
     
     def test_coaching_decision_explanation(self):
         """Test transparent reasoning in decisions."""
